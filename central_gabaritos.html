@@ -123,8 +123,8 @@
 
     document.getElementById('saveGitHub').addEventListener('click', async () => {
       
-      const encoded = 'Z2l0aHViX3BhdF8xMUJRQU1IRVEwM0RvZ3FCanNDWFh4X3ZiN3VHM0Q2Qlp6SFJtTFcwNkZQU0tLMTdtTzJoVmFFa2RVZDlGQ0hMSUk2VjU2T1lPVExZc0lIZUpC';
-      const token = decodeURIComponent(escape(atob(encoded)));
+      const token = document.getElementById('tokenInput').value.trim();
+      if (!token) return alert('Informe seu token GitHub primeiro.');
 
       try {
         const conteudo = JSON.stringify(dados, null, 2);
