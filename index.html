@@ -67,6 +67,46 @@
 
 <script>
 let gabarito = null;
+// --- auto-load JSON quando ?file=... estiver presente na URL ---
+async function tryLoadFromQueryParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const fileParam = params.get('file');
+    if (!fileParam) return; // nada para fazer
+
+    // pode vir codificado (https%3A...), vamos decodificar
+    const url = decodeURIComponent(fileParam);
+
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Falha ao carregar JSON (status ${res.status})`);
+    const obj = await res.json();
+
+    // validar estrutura básica
+    if (!obj.questions || !Array.isArray(obj.questions)) {
+      throw new Error('JSON não contém "questions" (formato inválido).');
+    }
+
+    // atribui e renderiza
+    gabarito = obj;
+    render();
+
+    // opcional: desabilita o botão de importar para evitar confusão
+    const importBtn = document.getElementById('importBtn');
+    if (importBtn) importBtn.remove();
+
+  } catch (err) {
+    console.error('Erro ao carregar gabarito via query param:', err);
+    // mostra msg amigável
+    const tbody = document.getElementById('questionsBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Erro ao carregar gabarito: ${err.message}</td></tr>`;
+    const scoreEl = document.getElementById('score');
+    if (scoreEl) scoreEl.textContent = '';
+  }
+}
+
+// chama ao carregar a página
+tryLoadFromQueryParam();
 
 function render(){
   const tbody = document.getElementById('questionsBody');
@@ -173,7 +213,11 @@ document.getElementById('importBtn').addEventListener('click', ()=>{
   input.click();
 });
 
-render();
+// tenta carregar via ?file=... ; caso não haja, renderiza normalmente
+tryLoadFromQueryParam().then(() => {
+  if (!gabarito) render(); // se não veio via query param, continua com o comportamento normal
+});
+
 </script>
 </body>
 </html>
