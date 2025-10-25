@@ -5,29 +5,63 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Página do Aluno — Simulador de Gabarito</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body{background:#f8fafc;padding:20px}
+    body{background-color:#f7f9fc;}
+    .table-striped tbody tr:nth-of-type(odd){background-color:#f2f2f2;}
+    .table-striped tbody tr:nth-of-type(even){background-color:#ffffff;}
+    .table-striped tbody tr:hover{background-color:#cfe2ff;}
+    .table thead th{background-color:#0d6efd;color:white;text-align:center;}
+    .table tbody td{text-align:center;vertical-align:middle;}
     .correct{background:#198754!important;color:#fff!important}
     .wrong{background:#dc3545!important;color:#fff!important}
-    .question-card{transition:box-shadow .15s;border-radius:8px}
+    .btn-import{font-size:14px;padding:6px 12px;}
+    header{background-color:#0d6efd;color:white;text-align:center;padding:20px 0;margin-bottom:20px;}
+    header h1, header h2{margin:0;}
+    .fa-star{color:#ddd;cursor:pointer;}
+    .fa-star.checked{color:#ffc107;}
+    .resp{
+      width:45px;
+      height:40px;
+      text-transform:uppercase;
+      text-align:center;
+      font-size:16px;
+      margin:auto;
+    }
+    strong{
+      font-weight: normal;
+    }
   </style>
 </head>
 <body>
+  <header>
+    <img src="https://online.academiafernandinhobeltrao.com.br/online/portal/plugins/images/favicon.png" alt="Logo" width="50">
+    <h1>Academia Fernandinho Beltrão</h1>
+    <h2 id="name"></h2>
+    <p class="lead">Isoladas 2025</p>
+  </header>
+
   <div class="container">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h1 class="h4">Página do Aluno — Simulador de Gabarito</h1>
-      <button id="importBtn" class="btn btn-primary btn-sm">Importar gabarito JSON</button>
+    <div class="d-flex justify-content-between mb-3">
+      <div>
+        <button id="importBtn" class="btn btn-primary btn-import"><i class="fa fa-upload"></i> Importar gabarito JSON</button>
+      </div>
+      <div id="score" class="fw-bold text-primary"></div>
     </div>
 
-    <div id="questionsList" class="mb-3"></div>
-
-    <div class="card p-3 mb-3">
-      <h6>Como usar</h6>
-      <ul>
-        <li>Importe o arquivo <code>gabarito.json</code> exportado pelo professor.</li>
-        <li>Digite suas respostas (A–E) e clique em <strong>Verificar</strong>.</li>
-        <li>As respostas corretas ficam verdes e as erradas vermelhas.</li>
-      </ul>
+    <div class="table-responsive">
+      <table id="questionsTable" class="table table-striped table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Questão</th>
+            <th>Resposta</th>
+            <th>Gabarito</th>
+            <th>Cod</th>
+            <th>★</th>
+          </tr>
+        </thead>
+        <tbody id="questionsBody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -35,51 +69,104 @@
 let gabarito = null;
 
 function render(){
-  const container = document.getElementById('questionsList');
-  container.innerHTML = '';
+  const tbody = document.getElementById('questionsBody');
+  tbody.innerHTML = '';
   if(!gabarito || !gabarito.questions || gabarito.questions.length===0){
-    container.innerHTML = '<div class="alert alert-info">Nenhum gabarito carregado ainda.</div>';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum gabarito carregado ainda.</td></tr>';
+    document.getElementById('score').textContent = '';
     return;
   }
 
+  if(gabarito.name){
+  document.getElementById("name").innerHTML = gabarito.name}
+
   gabarito.questions.sort((a,b)=>a.num-b.num);
-  gabarito.questions.forEach((q, idx)=>{
-    const div = document.createElement('div');
-    div.className = 'card p-3 mb-2 question-card';
-    div.innerHTML = `
-      <div class="row g-2 align-items-center">
-        <div class="col-md-1"><strong>${q.num}</strong></div>
-        <div class="col-md-3"><small class="text-muted">Código: ${escapeHTML(q.code||'—')}</small></div>
-        <div class="col-md-2"><input maxlength="1" class="form-control form-control-sm student-answer" placeholder="Resposta" data-idx="${idx}"></div>
-        <div class="col-md-2">
-          <button class="btn btn-sm btn-primary checkBtn" data-idx="${idx}">Verificar</button>
-        </div>
-      </div>
+
+  gabarito.questions.forEach((q,idx)=>{
+    const numeroQuestao = idx + 1; // número sequencial
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${numeroQuestao}</td>
+      <td><input type="text" maxlength="1" class="resp" data-idx="${idx}"></td>
+      <td class="gabarito"></td>
+      <td>${q.code || '—'}</td>
+      <td class="stars">${renderStars(q.stars||0, idx)}</td>
     `;
-    container.appendChild(div);
+    tbody.appendChild(tr);
   });
 
-  document.querySelectorAll('.checkBtn').forEach(btn=> btn.addEventListener('click', (e)=>{
-    const i = +e.target.getAttribute('data-idx');
-    const input = document.querySelector('.student-answer[data-idx="'+i+'"]');
-    const resp = (input.value||'').toUpperCase().trim();
-    if(!resp.match(/^[A-E]$/)){ alert('Digite A, B, C, D ou E'); return; }
-    const correct = (gabarito.questions[i].answer||'').toUpperCase();
-    if(!correct){ alert('Gabarito não definido para esta questão'); return; }
-    if(resp === correct){ input.classList.add('correct'); input.classList.remove('wrong'); }
-    else { input.classList.add('wrong'); input.classList.remove('correct'); }
-  }));
+  document.querySelectorAll('.resp').forEach(input=>{
+    input.addEventListener('keyup', e=>{
+      const val = (e.target.value||'').toUpperCase().trim();
+      if(val.match(/^[A-E]$/)){
+        if(confirm('Deseja confirmar a resposta digitada?')){
+          verificar(e.target);
+        } else {
+          e.target.value = '';
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll('.fa-star').forEach(star=>{
+    star.addEventListener('click', ()=>{
+      const idx = +star.dataset.idx;
+      const val = +star.dataset.val;
+      gabarito.questions[idx].stars = val;
+      render();
+    });
+  });
 }
 
-function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; }); }
+function verificar(input){
+  const idx = +input.getAttribute('data-idx');
+  const val = (input.value||'').toUpperCase().trim();
+  const tr = input.closest('tr');
+  const gabTd = tr.querySelector('.gabarito');
+  const certo = (gabarito.questions[idx].answer||'').toUpperCase();
+
+  if(val===certo){
+    input.classList.add('correct');
+    input.classList.remove('wrong');
+    gabTd.textContent = certo;
+  } else {
+    input.classList.add('wrong');
+    input.classList.remove('correct');
+    gabTd.textContent = certo;
+  }
+  atualizarPontuacao();
+}
+
+function atualizarPontuacao(){
+  const total = gabarito.questions.length;
+  let certos = 0;
+  document.querySelectorAll('.resp').forEach((inp)=>{
+    if(inp.classList.contains('correct')) certos++;
+  });
+  document.getElementById('score').textContent = `Pontuação: ${certos}/${total}`;
+}
+
+function renderStars(n, idx){
+  let html='';
+  for(let i=1;i<=5;i++){
+    html += `<i class='fa fa-star ${i<=n?'checked':''}' data-idx='${idx}' data-val='${i}'></i>`;
+  }
+  return html;
+}
 
 document.getElementById('importBtn').addEventListener('click', ()=>{
-  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  const input = document.createElement('input');
+  input.type='file'; input.accept='application/json';
   input.onchange = e=>{
-    const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
     reader.onload = ev=>{
-      try{ const obj = JSON.parse(ev.target.result); if(obj.questions && Array.isArray(obj.questions)){ gabarito = obj; render(); alert('Gabarito importado com sucesso!'); } else alert('Arquivo inválido'); }
-      catch(err){ alert('Erro ao ler JSON: '+err.message); }
+      try{
+        const obj = JSON.parse(ev.target.result);
+        if(obj.questions && Array.isArray(obj.questions)){
+          gabarito = obj; render(); 
+        } else alert('Arquivo inválido.');
+      }catch(err){ alert('Erro ao ler JSON: '+err.message); }
     };
     reader.readAsText(file);
   };
