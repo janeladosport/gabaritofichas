@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Página do Aluno — Simulador de Gabarito</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#f8fafc;padding:20px}
+    .correct{background:#198754!important;color:#fff!important}
+    .wrong{background:#dc3545!important;color:#fff!important}
+    .question-card{transition:box-shadow .15s;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h1 class="h4">Página do Aluno — Simulador de Gabarito</h1>
+      <button id="importBtn" class="btn btn-primary btn-sm">Importar gabarito JSON</button>
+    </div>
+
+    <div id="questionsList" class="mb-3"></div>
+
+    <div class="card p-3 mb-3">
+      <h6>Como usar</h6>
+      <ul>
+        <li>Importe o arquivo <code>gabarito.json</code> exportado pelo professor.</li>
+        <li>Digite suas respostas (A–E) e clique em <strong>Verificar</strong>.</li>
+        <li>As respostas corretas ficam verdes e as erradas vermelhas.</li>
+      </ul>
+    </div>
+  </div>
+
+<script>
+let gabarito = null;
+
+function render(){
+  const container = document.getElementById('questionsList');
+  container.innerHTML = '';
+  if(!gabarito || !gabarito.questions || gabarito.questions.length===0){
+    container.innerHTML = '<div class="alert alert-info">Nenhum gabarito carregado ainda.</div>';
+    return;
+  }
+
+  gabarito.questions.sort((a,b)=>a.num-b.num);
+  gabarito.questions.forEach((q, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'card p-3 mb-2 question-card';
+    div.innerHTML = `
+      <div class="row g-2 align-items-center">
+        <div class="col-md-1"><strong>${q.num}</strong></div>
+        <div class="col-md-3"><small class="text-muted">Código: ${escapeHTML(q.code||'—')}</small></div>
+        <div class="col-md-2"><input maxlength="1" class="form-control form-control-sm student-answer" placeholder="Resposta" data-idx="${idx}"></div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-primary checkBtn" data-idx="${idx}">Verificar</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  document.querySelectorAll('.checkBtn').forEach(btn=> btn.addEventListener('click', (e)=>{
+    const i = +e.target.getAttribute('data-idx');
+    const input = document.querySelector('.student-answer[data-idx="'+i+'"]');
+    const resp = (input.value||'').toUpperCase().trim();
+    if(!resp.match(/^[A-E]$/)){ alert('Digite A, B, C, D ou E'); return; }
+    const correct = (gabarito.questions[i].answer||'').toUpperCase();
+    if(!correct){ alert('Gabarito não definido para esta questão'); return; }
+    if(resp === correct){ input.classList.add('correct'); input.classList.remove('wrong'); }
+    else { input.classList.add('wrong'); input.classList.remove('correct'); }
+  }));
+}
+
+function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]; }); }
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  input.onchange = e=>{
+    const file = e.target.files[0]; if(!file) return; const reader = new FileReader();
+    reader.onload = ev=>{
+      try{ const obj = JSON.parse(ev.target.result); if(obj.questions && Array.isArray(obj.questions)){ gabarito = obj; render(); alert('Gabarito importado com sucesso!'); } else alert('Arquivo inválido'); }
+      catch(err){ alert('Erro ao ler JSON: '+err.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+});
+
+render();
+</script>
+</body>
+</html>
