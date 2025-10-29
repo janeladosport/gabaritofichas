@@ -9,17 +9,24 @@
     },
     {
       "data": "25/10/2025",
-      "semana": 2,
+      "semana": "1",
       "tema": "REVISÃO BIOLOGIA SSA1 - FICHA 2",
       "pdf": "https://janeladosport.github.io/gabaritofichas/files/REVBIOSSA1_F2.pdf",
       "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/gabarito2.json"
     },
     {
       "data": "25/10/2025",
-      "semana": "3",
+      "semana": "1",
       "tema": "REVISÃO BIOLOGIA SSA1 - FICHA 3",
       "pdf": "https://janeladosport.github.io/gabaritofichas/files/REVBIOSSA1_F3.pdf",
       "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/gabarito3.json"
+    },
+    {
+      "data": "29/10/2025",
+      "semana": "1",
+      "tema": "FICHA DE BIOLOGIA - TRANSTORNOS ALIMENTARES, PROCESSOS HETEROTRÓFICOS E ÁCIDOS NUCLEICOS",
+      "pdf": "https://janeladosport.github.io/gabaritofichas/files/BIO291025.pdf",
+      "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/ficha29.10.25-alan-lobo.json"
     }
   ]
 }
