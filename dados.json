@@ -23,10 +23,24 @@
     },
     {
       "data": "29/10/2025",
-      "semana": "1",
+      "semana": "2",
       "tema": "FICHA DE BIOLOGIA - TRANSTORNOS ALIMENTARES, PROCESSOS HETEROTRÓFICOS E ÁCIDOS NUCLEICOS",
       "pdf": "https://janeladosport.github.io/gabaritofichas/files/BIO291025.pdf",
       "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/ficha29.10.25-alan-lobo.json"
+    },
+    {
+      "data": "30/10/2025",
+      "semana": "2",
+      "tema": "REVISÃO BIOLOGIA SSA1 - FICHA 4",
+      "pdf": "https://janeladosport.github.io/gabaritofichas/files/REVBIOSSA1_F4.pdf",
+      "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/gabarito4.json"
+    },
+    {
+      "data": "30/10/2025",
+      "semana": "2",
+      "tema": "REVISÃO BIOLOGIA SSA1 - FICHA 5",
+      "pdf": "https://janeladosport.github.io/gabaritofichas/files/REVBIOSSA1_F5.pdf",
+      "gabarito": "https://janeladosport.github.io/gabaritofichas/gabaritos/gabarito5.json"
     }
   ]
 }
